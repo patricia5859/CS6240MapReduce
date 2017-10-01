@@ -1,0 +1,14 @@
+Time taken: 3.896
+Time taken: 3.025
+Time taken: 3.137
+Time taken: 3.101
+Time taken: 2.965
+Time taken: 3.085
+Time taken: 3.136
+Time taken: 3.293
+Time taken: 2.989
+Time taken: 3.267
+-------------------------------------------
+Average Time taken: 3.1894
+Minimum Time taken: 2.965
+Maximum Time taken: 3.896

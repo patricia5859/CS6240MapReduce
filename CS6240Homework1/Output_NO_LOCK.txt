@@ -1,0 +1,16 @@
+Total records: 8467426
+Time taken: 2.385
+Time taken: 1.877
+Time taken: 1.722
+Time taken: 1.602
+Time taken: 1.564
+Time taken: 1.76
+Time taken: 1.644
+Time taken: 1.54
+Time taken: 1.565
+Time taken: 1.598
+-------------------------------------------
+Average Time taken: 1.7257000000000002
+Minimum Time taken: 1.54
+Maximum Time taken: 2.385
+Total stations: 3784
