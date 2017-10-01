@@ -32,7 +32,7 @@ public class CombinerDriver extends Configured implements Tool {
 
 		// set the classes
 		job.setMapperClass(TempMapper.class);
-		//job.setCombinerClass(TempCombiner.class);;
+		job.setCombinerClass(TempCombiner.class);;
 		job.setReducerClass(TempReducer.class);
 
 		// read command line arguments

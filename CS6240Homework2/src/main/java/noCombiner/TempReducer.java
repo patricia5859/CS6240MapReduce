@@ -35,11 +35,15 @@ public class TempReducer extends MapReduceBase implements Reducer<Text, TwoWrita
 			 * */
 			if (arr[0] != Integer.MIN_VALUE) {
 				sumMin += arr[0];
-				countMin++;
-			} else {
-				sumMax += arr[1];
-				countMax++;
+				countMin += arr[1];
+			} 
+			if (arr[2] != Integer.MAX_VALUE){
+				sumMax += arr[2];
+				countMax += arr[3];
 			}
+			
+			//System.out.println("In Reducer: ---------------------------" +
+			//key + " " + sumMin + " " + countMin + " " + sumMax + " " + countMax );
 		}
 		
 		String value = "";
@@ -48,7 +52,7 @@ public class TempReducer extends MapReduceBase implements Reducer<Text, TwoWrita
 			// calculate average for both TMIN and TMAX for each station
 			value = (sumMin/countMin) + " , " + (sumMax/countMax);
 		}
-		
+
 		// emit the final result
 		output.collect(key, new Text(value));
 	}

@@ -43,7 +43,7 @@ public class TempCombiner extends MapReduceBase implements Reducer<Text, TwoWrit
 		}
 
 		output.collect(key, new TwoWritable(sumMin, countMin, sumMax, countMax));
-		System.out.println("In combiner: "+ key + " "+ sumMin + " " + countMin + " " + sumMax + " " +countMax);
+		//System.out.println("In combiner: "+ key + " "+ sumMin + " " + countMin + " " + sumMax + " " +countMax);
 
 	}
 

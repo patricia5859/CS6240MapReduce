@@ -32,10 +32,10 @@ public class TempMapper extends MapReduceBase implements Mapper<Object, Text, Te
 		*/
 		if (values[2].equals(TMIN)) {
 			output.collect(stationID, new TwoWritable(temperature, minCount, Integer.MAX_VALUE, 0));
-			System.out.println("From map--------------------------------"+ stationID + " Min : "+ temperature + " "+ minCount);
+			//System.out.println("From map--------------------------------"+ stationID + " Min : "+ temperature);
 		} else if (values[2].equals(TMAX)) {
 			output.collect(stationID, new TwoWritable(Integer.MIN_VALUE, 0, temperature, maxCount));
-			System.out.println("From map--------------------------------"+ stationID + " Max : "+ temperature + " "+ maxCount);
+			//System.out.println("From map--------------------------------"+ stationID + " Max : "+ temperature);
 		}
 	}
 
