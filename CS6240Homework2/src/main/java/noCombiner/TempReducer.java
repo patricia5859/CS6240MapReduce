@@ -42,8 +42,8 @@ public class TempReducer extends MapReduceBase implements Reducer<Text, TwoWrita
 				countMax += arr[3];
 			}
 			
-			//System.out.println("In Reducer: ---------------------------" +
-			//key + " " + sumMin + " " + countMin + " " + sumMax + " " + countMax );
+			System.out.println("In Reducer: ---------------------------" +
+			key + " " + sumMin + " " + countMin + " " + sumMax + " " + countMax );
 		}
 		
 		String value = "";
