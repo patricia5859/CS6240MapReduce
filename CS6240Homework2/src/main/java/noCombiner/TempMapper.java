@@ -3,19 +3,17 @@ package noCombiner;
 import java.io.IOException;
 
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.MapReduceBase;
-import org.apache.hadoop.mapred.Mapper;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.Mapper;
 
-public class TempMapper extends MapReduceBase implements Mapper<Object, Text, Text, TwoWritable> {
+public class TempMapper extends Mapper<Object, Text, Text, TwoWritable> {
 	
 	// variables
 	String TMIN = "TMIN";
 	String TMAX = "TMAX";
 
 
-	public void map(Object key, Text value, OutputCollector<Text, TwoWritable> output, Reporter r) throws IOException {
+	@Override
+	public void map(Object key, Text value, Context context) throws IOException {
 
 		// extract values
 		String line = value.toString();
@@ -31,10 +29,20 @@ public class TempMapper extends MapReduceBase implements Mapper<Object, Text, Te
 		*  if it is of type TMIN emit <stationID, (TMINTemperature, 0)> as <k,v>
 		*/
 		if (values[2].equals(TMIN)) {
-			output.collect(stationID, new TwoWritable(temperature, minCount, Integer.MAX_VALUE, 0));
+			try {
+				context.write(stationID, new TwoWritable(temperature, minCount, Integer.MAX_VALUE, 0));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			//System.out.println("From map--------------------------------"+ stationID + " Min : "+ temperature);
 		} else if (values[2].equals(TMAX)) {
-			output.collect(stationID, new TwoWritable(Integer.MIN_VALUE, 0, temperature, maxCount));
+			try {
+				context.write(stationID, new TwoWritable(Integer.MIN_VALUE, 0, temperature, maxCount));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			//System.out.println("From map--------------------------------"+ stationID + " Max : "+ temperature);
 		}
 	}

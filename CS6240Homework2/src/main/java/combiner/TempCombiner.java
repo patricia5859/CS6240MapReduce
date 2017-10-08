@@ -4,17 +4,14 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.MapReduceBase;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reducer;
-import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.Reducer;
 
 import noCombiner.TwoWritable;
 
-public class TempCombiner extends MapReduceBase implements Reducer<Text, TwoWritable, Text, TwoWritable> {
+public class TempCombiner extends Reducer<Text, TwoWritable, Text, TwoWritable> {
 
-	public void reduce(Text key, Iterator<TwoWritable> values, OutputCollector<Text, TwoWritable> output,
-			Reporter reporter) throws IOException {
+	@Override
+	public void reduce(Text key, Iterable<TwoWritable> values, Context context) throws IOException {
 
 		// variables
 		int sumMax = 0;
@@ -23,8 +20,9 @@ public class TempCombiner extends MapReduceBase implements Reducer<Text, TwoWrit
 		int countMin = 0;
 		int[] arr;
 
-		while (values.hasNext()) {
-			TwoWritable obj = values.next();
+		Iterator<TwoWritable> ite = values.iterator();
+		while (ite.hasNext()) {
+			TwoWritable obj = ite.next();
 
 			// get TMIN & TMAX values
 			arr = obj.getFields();
@@ -42,7 +40,12 @@ public class TempCombiner extends MapReduceBase implements Reducer<Text, TwoWrit
 			}
 		}
 
-		output.collect(key, new TwoWritable(sumMin, countMin, sumMax, countMax));
+		try {
+			context.write(key, new TwoWritable(sumMin, countMin, sumMax, countMax));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//System.out.println("In combiner: "+ key + " "+ sumMin + " " + countMin + " " + sumMax + " " +countMax);
 
 	}

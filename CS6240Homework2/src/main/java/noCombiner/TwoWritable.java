@@ -49,4 +49,9 @@ public class TwoWritable implements Writable {
 		return arr;
 	}
 	
+	@Override
+	public String toString() {
+		return (minTemp + " " + minCount + " " + maxTemp + " " + maxCount);
+	}
+	
 }

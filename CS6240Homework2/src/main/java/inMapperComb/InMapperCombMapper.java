@@ -5,86 +5,115 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.MapReduceBase;
-import org.apache.hadoop.mapred.Mapper;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.Mapper;
 
 import noCombiner.TwoWritable;
 
-public class InMapperCombMapper extends MapReduceBase implements Mapper<Object, Text, Text, TwoWritable> {
+public class InMapperCombMapper extends Mapper<Object, Text, Text, TwoWritable> {
 
 	// variables
 	String TMIN = "TMIN";
 	String TMAX = "TMAX";
 	HashMap<String, int[]> hashMap = new HashMap<String, int[]>();
-	int[] arr = new int[4];
+	
+	
+	@Override
+	public void map(Object key, Text value, Context context) throws IOException {
 
-	public void map(Object key, Text value, OutputCollector<Text, TwoWritable> output, Reporter r) throws IOException {
-
+		// Array for minTemp, minCount, maxTemp, maxCount
+		int[] arr = {0, 0, 0, 0};
+		
 		// extract values
 		String line = value.toString();
 		String[] values = line.split(",");
-		int minCount = 1;
-		int maxCount = 1;
 		int temperature = Integer.parseInt(values[3]);
+		
+		System.out.println("");
+		for(int i=0; i<values.length; i++) {
+			System.out.print(values[i] + "  ");
+		}
+		
+		System.out.println("---------------------");
 
 		Text stationID = new Text(values[0]);
+		
+		/* 
+		 * Extract values for minTemp, countMin, maxTemp, countMax
+		 * if hashMpa contains entry for stationID
+		 * */ 
+		
+		if(hashMap.containsKey(stationID.toString())) {
+			arr[0] = hashMap.get(stationID.toString())[0];
+			arr[1] = hashMap.get(stationID.toString())[1];
+			arr[2] = hashMap.get(stationID.toString())[2];
+			arr[3] = hashMap.get(stationID.toString())[3];
+		}
+		
+		if (values[2].equals(TMIN)) {
+			arr[0] += temperature;
+			arr[1] ++;
+		}
+		
+		else if(values[2].equals(TMAX)) {
+			arr[2] += temperature;
+			arr[3] ++;
+		}
+		
+		hashMap.put(stationID.toString(), arr);
 
 		/*
 		 * check if type of temperature is either TMAX or TMIN, if it is of type
 		 * TMAX emit <stationID, (0, TMAXTemperature)> as <k,v> if it is of type
 		 * TMIN emit <stationID, (TMINTemperature, 0)> as <k,v>
 		 */
-		if (values[2].equals(TMIN)) {
-			if (hashMap.containsKey(stationID.toString())) {
-				arr[0] += hashMap.get(stationID.toString())[0];
-				arr[1] = hashMap.get(stationID.toString())[1] + 1;
-			} else {
-				arr[0] = temperature;
-				arr[1] = minCount;
-			}
-			arr[2] = Integer.MAX_VALUE;
-			arr[3] = 0;
-
-			hashMap.put(key.toString(), arr);
-			// output.collect(stationID, new TwoWritable(temperature, minCount,
-			// Integer.MAX_VALUE, 0));
-			// System.out.println("From map--------------------------------"+
-			// stationID + " Min : "+ temperature);
-		} else if (values[2].equals(TMAX)) {
-
-			if (hashMap.containsKey(stationID.toString())) {
-				arr[2] += hashMap.get(stationID.toString())[0];
-				arr[3] = hashMap.get(stationID.toString())[1] + 1;
-			} else {
-				arr[2] = temperature;
-				arr[3] = minCount;
-			}
-			arr[0] = Integer.MIN_VALUE;
-			arr[1] = 0;
-
-			hashMap.put(stationID.toString(), arr);
-			//output.collect(stationID, new TwoWritable(Integer.MIN_VALUE, 0, temperature, maxCount));
-			// System.out.println("From map--------------------------------"+
-			// stationID + " Max : "+ temperature);
-			
-			System.out.println("In map()------------------------------");
+//		if (values[2].equals(TMIN)) {
+//			
+//			if (hashMap.containsKey(stationID.toString())) {
+//				arr[0] = hashMap.get(stationID.toString())[0] + temperature;
+//				arr[1] = hashMap.get(stationID.toString())[1] + 1;
+//			} else {
+//				arr[0] = temperature;
+//				arr[1] = minCount;
+//			}
+//
+//		} else if (values[2].equals(TMAX)) {
+//
+//			if (hashMap.containsKey(stationID.toString())) {
+//				arr[2] = hashMap.get(stationID.toString())[2] + temperature;
+//				arr[3] = hashMap.get(stationID.toString())[3] + 1;
+//			} else {
+//				arr[2] = temperature;
+//				arr[3] = maxCount;
+//			}
+//		}
+//		
+		System.out.println("");
+		
+		for(int i=0; i<arr.length; i++) {
+			System.out.print(arr[i] + "  ");
 		}
+		
+		//System.out.println("---------------------");
+		
 	}
 	
-	public void cleanup(OutputCollector<Text, TwoWritable> output) {
-		System.out.println("In map-combiner: -------------------------"); 
+	
+	@Override
+	public void cleanup(Context context) {
+		
 		/*
 		 * iterate over hashMap, emit each <k, v> pair
 		 * */
 		for(Map.Entry<String, int[]> entry: hashMap.entrySet()) {
 			int[] values = entry.getValue();
 			try {
-				output.collect(new Text(entry.getKey()), 
-						new TwoWritable(values[0], values[1], values[2], values[3]));
-				
-						//entry.getKey() + " " + values[0] + " " + values[1] + " " + values[2] + " " + values[3] );
+				try {
+					context.write(new Text(entry.getKey()), 
+							new TwoWritable(values[0], values[1], values[2], values[3]));
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

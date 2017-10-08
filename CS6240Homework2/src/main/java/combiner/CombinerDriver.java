@@ -7,10 +7,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -22,8 +23,8 @@ public class CombinerDriver extends Configured implements Tool {
 
 	public int run(String args[]) throws Exception {
 
-		JobConf job = new JobConf(getConf(), CombinerDriver.class);
-		job.setJobName("MinMaxTemperature");
+		Configuration conf = new Configuration();
+		Job job = new Job(conf, "MinMaxtTemp");
 
 		// the key is "stationID"
 		job.setOutputKeyClass(Text.class);
@@ -38,21 +39,7 @@ public class CombinerDriver extends Configured implements Tool {
 		// read command line arguments
 		List<String> other_args = new ArrayList<String>();
 		for (int i = 0; i < args.length; ++i) {
-			try {
-				if ("-m".equals(args[i])) {
-					job.setNumMapTasks(Integer.parseInt(args[++i]));
-				} else if ("-r".equals(args[i])) {
-					job.setNumReduceTasks(Integer.parseInt(args[++i]));
-				} else {
-					other_args.add(args[i]);
-				}
-			} catch (NumberFormatException except) {
-				System.out.println("ERROR: Integer expected instead of " + args[i]);
-				return printUsage();
-			} catch (ArrayIndexOutOfBoundsException except) {
-				System.out.println("ERROR: Required parameter missing from " + args[i - 1]);
-				return printUsage();
-			}
+			other_args.add(args[i]);
 		}
 		// make sure there are exactly 2 parameters left.
 		if (other_args.size() != 2) {
@@ -71,7 +58,7 @@ public class CombinerDriver extends Configured implements Tool {
 		job.setOutputValueClass(TwoWritable.class);
 
 		// assign the job to Hadoop framework
-		JobClient.runJob(job);
+		job.waitForCompletion(true);
 
 		return 0;
 	}

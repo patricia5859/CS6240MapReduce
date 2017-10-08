@@ -4,14 +4,12 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.MapReduceBase;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reducer;
-import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.Reducer;
 
-public class TempReducer extends MapReduceBase implements Reducer<Text, TwoWritable, Text, Text> {
+public class TempReducer extends Reducer<Text, TwoWritable, Text, Text> {
 
-	public void reduce(Text key, Iterator<TwoWritable> values, OutputCollector<Text, Text> output, Reporter r)
+	@Override
+	public void reduce(Text key, Iterable<TwoWritable> values, Context context)
 			throws IOException {
 			
 		// variables
@@ -23,8 +21,10 @@ public class TempReducer extends MapReduceBase implements Reducer<Text, TwoWrita
 		int maxTemp = 0;
 		int[] arr;
 		
-		while (values.hasNext()) {
-			TwoWritable obj = values.next();
+		Iterator<TwoWritable> ite = values.iterator();
+		
+		while (ite.hasNext()) {
+			TwoWritable obj = ite.next();
 			
 			// get TMIN & TMAX values
 			arr = obj.getFields();
@@ -54,7 +54,12 @@ public class TempReducer extends MapReduceBase implements Reducer<Text, TwoWrita
 		}
 
 		// emit the final result
-		output.collect(key, new Text(value));
+		try {
+			context.write(key, new Text(value));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
